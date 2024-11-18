@@ -1,65 +1,52 @@
-/*
- * grunt-marked
- * https://github.com/gobwas/grunt-marked
- *
- * Copyright (c) 2014 Sergey Kamardin <gobwas@gmail.com>
- * Licensed under the MIT license.
- */
-
 'use strict';
 
-module.exports = function(grunt) {
+module.exports = function (grunt) {
+    const { marked } = require('marked');
+    const async = require('async');
+    const fs = require('fs');
+    const os = require('os');
+    const util = require('util');
 
-    var marked = require('marked'),
-        async  = require('async'),
-        fs     = require('fs'),
-        os     = require('os'),
-        util   = require('util');
+    grunt.registerMultiTask("marked", "Runs marked plugin to render markdown files", function () {
+        const done = this.async();
+        const options = this.options({
+            gfm: true,
+            tables: true,
+            breaks: false,
+            pedantic: false,
+            sanitize: true,
+            smartLists: true,
+            smartypants: false,
+            highlight: true
+        });
+        const files = this.files;
 
-    grunt.registerMultiTask("marked", "Runs marked plugin to render markdown files", function() {
-        var done    = this.async(),
-            options = this.options({
-                gfm:         true,
-                tables:      true,
-                breaks:      false,
-                pedantic:    false,
-                sanitize:    true,
-                smartLists:  true,
-                smartypants: false,
-                highlight:   true
-            }),
-            files = this.files;
-
+        const { Renderer } = require('marked');
         if (!options.renderer) {
-          options.renderer = new marked.Renderer();
+            options.renderer = new Renderer();
         }
 
-        // install highlight.js
         if (options.highlight) {
-            options.highlight = (function(highlight) {
-                return function (code) {
-                    return highlight.highlightAuto(code).value;
-                };
-            })(require('highlight.js'));
+            const hljs = require('highlight.js');
+            options.highlight = (code, language) => {
+                const validLanguage = hljs.getLanguage(language) ? language : 'plaintext';
+                return hljs.highlight(code, { language: validLanguage }).value;
+            };
         }
 
         marked.setOptions(options);
 
-        async.each(files, function(file, next) {
-            var sources, destination;
-
-            destination = file.dest;
-
-            sources = file.src.filter(function(path) {
+        async.each(files, function (file, next) {
+            const destination = file.dest;
+            const sources = file.src.filter(path => {
                 if (!fs.existsSync(path)) {
                     grunt.log.warn(util.format('Source file "%s" is not found', path));
                     return false;
                 }
-
                 return true;
             });
 
-            async.map(sources, fs.readFile, function(err, contents) {
+            async.map(sources, fs.readFile, function (err, contents) {
                 if (err) {
                     grunt.log.error(util.format('Could not read files "%s"', sources.join(', ')));
                     return next(err);
@@ -70,10 +57,9 @@ module.exports = function(grunt) {
                 next();
             });
 
-        }, function() {
-          grunt.log.ok(files.length + ' ' + grunt.util.pluralize(files.length, 'file/files') + ' created.');
-          done();
+        }, function () {
+            grunt.log.ok(files.length + ' ' + grunt.util.pluralize(files.length, 'file/files') + ' created.');
+            done();
         });
     });
-
 };

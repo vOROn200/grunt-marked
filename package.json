@@ -28,15 +28,15 @@
     "test": "grunt test"
   },
   "dependencies": {
-    "marked": "~0.3.1",
-    "async": "~0.2.10",
-    "highlight.js": "~8.0.0"
+    "marked": "15.0.1",
+    "async": "3.2.6",
+    "highlight.js": "11.10.0"
   },
   "devDependencies": {
-    "grunt-contrib-jshint": "~0.6.0",
-    "grunt-contrib-clean": "~0.4.0",
-    "grunt-contrib-nodeunit": "~0.2.0",
-    "grunt": "~0.4.2"
+    "grunt-contrib-jshint": "3.2.0",
+    "grunt-contrib-clean": "2.0.1",
+    "grunt-contrib-nodeunit": "5.0.0",
+    "grunt": "1.6.1"
   },
   "peerDependencies": {
     "grunt": ">=0.4.2"
